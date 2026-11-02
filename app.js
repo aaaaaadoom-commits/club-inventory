@@ -27,7 +27,98 @@ function renderInventory(mode){
 function toggleMenu(i){document.querySelectorAll('.menu').forEach(m=>{if(m.id!=='menu-'+i)m.classList.add('hidden');});document.getElementById('menu-'+i)?.classList.toggle('hidden');}
 function changeQuantity(i,delta){const p=products();if(!p[i])return;p[i].quantity=Math.max(0,(Number(p[i].quantity)||0)+delta);if(saveProducts(p))renderInventory('editor');}
 function deleteProduct(i){const p=products();if(!p[i])return;if(!confirm(`Delete "${p[i].name}"? This cannot be undone in this browser.`))return;p.splice(i,1);if(saveProducts(p))renderInventory('editor');}
-function imageAsDataUrl(file){return new Promise((resolve,reject)=>{if(!file){resolve('');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)){reject(new Error('Choose a JPG, PNG, or WebP image.'));return;}if(file.size>2*1024*1024){reject(new Error('Use an image smaller than 2 MB for this demo.'));return;}const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(file);});}
+
+async 
+async function imageAsDataUrl(file) {
+  if (!file) return "";
+
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowed.includes(file.type)) {
+    throw new Error("Choose a JPG, PNG, or WebP image.");
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    throw new Error(
+      "Image exceeds 20 MB. Choose a smaller file."
+    );
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const picture = new Image();
+
+      picture.onload = () => resolve(picture);
+
+      picture.onerror = () => reject(
+        new Error("Cannot open this image.")
+      );
+
+      picture.src = objectUrl;
+    });
+
+    // Automatically reduce resolution and file size.
+    for (const maxSize of [1400, 1100, 900, 700, 500]) {
+      const scale = Math.min(
+        1,
+        maxSize / Math.max(
+          img.naturalWidth,
+          img.naturalHeight
+        )
+      );
+
+      const canvas = document.createElement("canvas");
+
+      canvas.width = Math.max(
+        1, Math.round(img.naturalWidth * scale)
+      );
+
+      canvas.height = Math.max(
+        1, Math.round(img.naturalHeight * scale)
+      );
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        throw new Error("Image processing unavailable.");
+      }
+
+      // White background for transparent PNG images.
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(
+        img, 0, 0, canvas.width, canvas.height
+      );
+
+      for (const quality of [0.85, 0.72, 0.58, 0.44]) {
+        const result = canvas.toDataURL(
+          "image/jpeg", quality
+        );
+
+        if (
+          result.startsWith("data:image/jpeg;base64,")
+          && result.length < 900000
+        ) {
+          return result;
+        }
+      }
+    }
+
+    throw new Error(
+      "Image could not be compressed enough."
+    );
+
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 function setStatus(msg){const el=document.getElementById('status');if(el)el.textContent=msg;}
 async function submitProduct(event,editing){event.preventDefault();setStatus('');try{
  const name=document.getElementById('name').value.trim(),quantity=Number(document.getElementById('quantity').value),file=document.getElementById('image').files[0];
