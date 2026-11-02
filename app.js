@@ -68,3 +68,168 @@ function loadEdit() {
         preview.classList.remove("hidden");
     }
 }
+
+// CLUB LOGIN CONNECTION
+const CLUB_URL = "https://script.google.com/macros/s/AKfycbw-7dcW2Ed5ZqbPYJnG_m6JF7T5vu8ZEegyIXw8Rq1_EgYi0nCAb5ah6rsvrRwF6mI/exec";
+let requestId = 0;
+
+function clubRequest(action, email="") {
+  return new Promise((resolve, reject) => {
+    const cb = `clubCb_${Date.now()}_${++requestId}`;
+    const script = document.createElement("script");
+    let done = false;
+
+    const timer = setTimeout(
+      () => finish(new Error("Timeout")), 12000
+    );
+
+    function finish(error, data) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      script.remove();
+      delete window[cb];
+      error ? reject(error) : resolve(data);
+    }
+
+    window[cb] = data => finish(null, data);
+    script.onerror = () =>
+      finish(new Error("Connection failed"));
+
+    const url = new URL(CLUB_URL);
+    url.searchParams.set("action", action);
+    url.searchParams.set("callback", cb);
+
+    if (email) url.searchParams.set("email", email);
+
+    script.src = url.href;
+    document.head.appendChild(script);
+  });
+}
+
+function blockPage(title, message, retry=false) {
+  document.documentElement.classList.remove("clubReady");
+  document.getElementById("gateTitle").textContent = title;
+  document.getElementById("gateMessage").textContent = message;
+  document.getElementById("gateRetry").hidden = !retry;
+}
+
+async function checkPage() {
+  blockPage(
+    "Checking connection…",
+    "Contacting Google Sheets."
+  );
+
+  try {
+    const status = await clubRequest("status");
+
+    if (!status || !status.ok) {
+      throw new Error("Offline");
+    }
+
+    const page = document.body.dataset.clubPage;
+
+    if (page !== "login") {
+      const email = sessionStorage.getItem("clubEmail");
+
+      if (!email) {
+        location.replace("index.html");
+        return;
+      }
+
+      const result = await clubRequest("role", email);
+
+      if (!result || !result.ok) {
+        throw new Error("Offline");
+      }
+
+      const allowed = page === "viewer"
+        ? ["Editor", "Viewer"].includes(result.role)
+        : result.role === "Editor";
+
+      if (!allowed) {
+        sessionStorage.removeItem("clubEmail");
+        blockPage(
+          "Access denied",
+          "This account cannot open this page."
+        );
+        return;
+      }
+    }
+
+    document.documentElement.classList.add("clubReady");
+
+  } catch {
+    blockPage(
+      "Connection unavailable",
+      "Google Sheets could not be reached. " +
+      "Access is blocked until the connection works.",
+      true
+    );
+  }
+}
+
+async function clubLogin(event) {
+  event.preventDefault();
+
+  const emailInput = document.getElementById("email");
+
+  if (!emailInput.reportValidity()) return;
+
+  const submit = event.target.querySelector(
+    '[type="submit"]'
+  );
+
+  const message = document.getElementById("loginMessage");
+
+  submit.disabled = true;
+  message.textContent = "Checking Staff sheet…";
+
+  try {
+    const result = await clubRequest(
+      "role",
+      emailInput.value.trim().toLowerCase()
+    );
+
+    if (!result || !result.ok) {
+      throw new Error("Offline");
+    }
+
+    if (!["Editor", "Viewer"].includes(result.role)) {
+      message.textContent =
+        "Access denied. Email not listed in Staff.";
+      return;
+    }
+
+    sessionStorage.setItem(
+      "clubEmail",
+      emailInput.value.trim().toLowerCase()
+    );
+
+    location.href = result.role === "Editor"
+      ? "editor.html"
+      : "viewer.html";
+
+  } catch {
+    blockPage(
+      "Connection unavailable",
+      "Cannot reach Google Sheets. Login is blocked.",
+      true
+    );
+
+  } finally {
+    submit.disabled = false;
+  }
+}
+
+window.logout = function () {
+  sessionStorage.removeItem("clubEmail");
+  location.href = "index.html";
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("gateRetry")
+    ?.addEventListener("click", checkPage);
+
+  checkPage();
+});
