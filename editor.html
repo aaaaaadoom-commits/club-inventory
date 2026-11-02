@@ -1,39 +1,64 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Club Inventory — Editor</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script><style id="clubGateCSS">
-html:not(.clubReady) body>:not(#clubGate) {
-  display:none!important
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Club Inventory — Editor</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+<style id="clubGateCSS">
+html:not(.clubReady) body > :not(#clubGate) {
+    display: none !important;
 }
+
 #clubGate {
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  background:#121622;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  font:16px Arial
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #121622;
+    color: white;
+    font: 16px/1.5 Arial, sans-serif;
 }
-#clubGate>section {
-  max-width:440px;
-  text-align:center;
-  background:#222a3d;
-  border:1px solid #485273;
-  border-radius:15px;
-  padding:26px
+
+#clubGate section {
+    width: 100%;
+    max-width: 440px;
+    padding: 26px;
+    text-align: center;
+    background: #222a3d;
+    border: 1px solid #485273;
+    border-radius: 15px;
 }
-#clubGate p {
-  color:#d2d9ec;
-  line-height:1.5
+
+#gateMessage {
+    color: #d2d9ec;
 }
+
 #gateRetry {
-  border:0;
-  border-radius:9px;
-  padding:12px 18px;
-  cursor:pointer
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
 }
+
 #gateRetry[hidden],
 html.clubReady #clubGate {
-  display:none!important
+    display: none !important;
 }
-</style></head><body><header><div class="brand">📦 Club Inventory <span class="small">Editor</span></div><div class="header-actions"><button class="secondary" onclick="toggleTheme()">🌗 Theme</button><button class="secondary" onclick="logout()">Log out</button></div></header><main><div class="toolbar"><div><h1>Inventory</h1><p class="muted">Prototype: changes are saved in this browser only.</p></div><a class="button" href="add-product.html">＋ Add product</a></div><div class="filters"><input id="search" placeholder="Search inventory" oninput="renderInventory('editor')"><select id="categoryFilter" onchange="renderInventory('editor')"><option value="">All categories</option></select></div><div style="height:20px"></div><section class="grid" id="productGrid"></section></main><script>document.addEventListener('DOMContentLoaded',()=>renderInventory('editor'));</script></body></html>
+</style>
+
+</head><body data-club-page="editor">
+
+<div id="clubGate" role="status" aria-live="polite">
+    <section>
+        <h2 id="gateTitle">Checking connection…</h2>
+        <p id="gateMessage">
+            Contacting Google Sheets.
+        </p>
+        <button
+            id="gateRetry"
+            type="button"
+            hidden
+        >
+            Try again
+        </button>
+    </section>
+</div>
+<header><div class="brand">📦 Club Inventory <span class="small">Editor</span></div><div class="header-actions"><button class="secondary" onclick="toggleTheme()">🌗 Theme</button><button class="secondary" onclick="logout()">Log out</button></div></header><main><div class="toolbar"><div><h1>Inventory</h1><p class="muted">Prototype: changes are saved in this browser only.</p></div><a class="button" href="add-product.html">＋ Add product</a></div><div class="filters"><input id="search" placeholder="Search inventory" oninput="renderInventory('editor')"><select id="categoryFilter" onchange="renderInventory('editor')"><option value="">All categories</option></select></div><div style="height:20px"></div><section class="grid" id="productGrid"></section></main><script>document.addEventListener('DOMContentLoaded',()=>renderInventory('editor'));</script></body></html>
