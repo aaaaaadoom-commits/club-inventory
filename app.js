@@ -1,12 +1,7 @@
 'use strict';
 // Prototype only: local browser storage is NOT secure or shared between staff.
-const KEY='clubInventoryDemoProductsV3';
-const DEFAULT_PRODUCTS=[
-{id:'table-1',name:'Folding tables',quantity:6,category:'Event supplies',owner:'Club',notes:'Club equipment',image:''},
-{id:'poster-1',name:'Breast cancer awareness poster 1',quantity:1,category:'Posters',owner:'',notes:'',image:''},
-{id:'poster-2',name:'Breast cancer awareness poster 2',quantity:1,category:'Posters',owner:'',notes:'',image:''},
-{id:'poster-3',name:'Breast cancer awareness poster 3',quantity:1,category:'Posters',owner:'',notes:'',image:''}
-];
+const KEY='clubInventoryEmptyProductsV1';
+const DEFAULT_PRODUCTS=[];
 function products(){try{const x=JSON.parse(localStorage.getItem(KEY));return Array.isArray(x)?x:DEFAULT_PRODUCTS.map(p=>({...p}));}catch{return DEFAULT_PRODUCTS.map(p=>({...p}));}}
 function saveProducts(p){try{localStorage.setItem(KEY,JSON.stringify(p));return true;}catch{alert('Browser storage is full. Try a smaller image.');return false;}}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
