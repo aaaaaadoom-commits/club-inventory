@@ -22,7 +22,7 @@ function renderInventory(mode){
  const controls=mode==='editor'?`<button class="more" aria-label="Product options" onclick="toggleMenu(${idx})">⋯</button><div id="menu-${idx}" class="menu hidden"><button class="secondary" onclick="location.href='edit.html?id=${encodeURIComponent(p.id)}'">✏️ Edit</button><button class="danger" onclick="deleteProduct(${idx})">🗑️ Delete</button></div>`:'';
  const qty=mode==='editor'?`<div class="card-bottom"><div class="quantity-actions"><button class="secondary round" aria-label="Subtract one" onclick="changeQuantity(${idx},-1)">−</button><span class="stock">${Number(p.quantity)||0}</span><button class="secondary round" aria-label="Add one" onclick="changeQuantity(${idx},1)">+</button></div><small class="muted">in stock</small></div>`:`<div class="stock">${Number(p.quantity)||0} <small>in stock</small></div>`;
  return `<article class="card"><div class="photo">${photo}</div>${controls}<div class="card-content"><span class="tag">${escapeHtml(p.category||'Uncategorized')}</span><h2>${escapeHtml(p.name)}</h2>${qty}${p.owner?`<p class="small">Owner: ${escapeHtml(p.owner)}</p>`:''}${p.notes?`<p class="small">${escapeHtml(p.notes)}</p>`:''}</div></article>`;
- }).join(''):'<p class="empty">No products found.</p>';
+ }).join(''):'<p class="empty">No products to display yet. Google Sheets products are not connected to this website.</p>';
 }
 function toggleMenu(i){document.querySelectorAll('.menu').forEach(m=>{if(m.id!=='menu-'+i)m.classList.add('hidden');});document.getElementById('menu-'+i)?.classList.toggle('hidden');}
 function changeQuantity(i,delta){const p=products();if(!p[i])return;p[i].quantity=Math.max(0,(Number(p[i].quantity)||0)+delta);if(saveProducts(p))renderInventory('editor');}
@@ -233,3 +233,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   checkPage();
 });
+
+// CLUB REFRESH BUTTON
+async function refreshInventoryNow() {
+    const button =
+        document.getElementById("clubRefresh");
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Refreshing...";
+    }
+
+    try {
+        await checkPage();
+
+        const connected =
+            document.documentElement.classList
+            .contains("clubReady");
+
+        if (connected) {
+            const mode =
+                document.body.dataset.clubPage
+                === "viewer" ? "viewer" : "editor";
+
+            renderInventory(mode);
+        }
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = "↻ Refresh";
+        }
+    }
+}
