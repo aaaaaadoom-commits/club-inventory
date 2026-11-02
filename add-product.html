@@ -1,4 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Add Product — Club Inventory</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Add Product — Club Inventory</title><link rel="stylesheet" href="styles.css"><script src="app.js?v=club-gate-fix-2" defer></script>
+
+
+
 <style id="clubGateCSS">
 html:not(.clubReady) body > :not(#clubGate) {
     display: none !important;
@@ -7,11 +10,11 @@ html:not(.clubReady) body > :not(#clubGate) {
 #clubGate {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 20px;
     background: #121622;
     color: white;
     font: 16px/1.5 Arial, sans-serif;
@@ -21,10 +24,10 @@ html:not(.clubReady) body > :not(#clubGate) {
     width: 100%;
     max-width: 440px;
     padding: 26px;
-    text-align: center;
     background: #222a3d;
     border: 1px solid #485273;
-    border-radius: 15px;
+    border-radius: 14px;
+    text-align: center;
 }
 
 #gateMessage {
@@ -34,7 +37,7 @@ html:not(.clubReady) body > :not(#clubGate) {
 #gateRetry {
     padding: 11px 18px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 9px;
     cursor: pointer;
 }
 
@@ -44,21 +47,34 @@ html.clubReady #clubGate {
 }
 </style>
 
-</head><body data-club-page="editor">
+<script id="clubGateWatchdog">
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        const title = document.getElementById('gateTitle');
+        const message = document.getElementById('gateMessage');
 
+        if (title && message &&
+            title.textContent.includes('Checking')) {
+            title.textContent = 'Connection unavailable';
+            message.textContent =
+                'Could not start the website connection. ' +
+                'Check app.js and refresh.';
+        }
+    }, 15000);
+});
+</script>
+
+</head><body data-club-page="editor">
 <div id="clubGate" role="status" aria-live="polite">
     <section>
         <h2 id="gateTitle">Checking connection…</h2>
-        <p id="gateMessage">
-            Contacting Google Sheets.
-        </p>
-        <button
-            id="gateRetry"
-            type="button"
-            hidden
-        >
+        <p id="gateMessage">Contacting Google Sheets.</p>
+        <button id="gateRetry" type="button" hidden>
             Try again
         </button>
     </section>
 </div>
+
+
+
 <header><div class="brand">📦 Club Inventory</div><button class="secondary" onclick="toggleTheme()">🌗 Theme</button></header><main><section class="panel form-panel"><h1>Add product</h1><p class="muted">Only name, quantity and image are required.</p><form onsubmit="submitProduct(event,false)"><label for="name">Product name *</label><input id="name" required maxlength="150"><label for="quantity">Quantity *</label><input id="quantity" type="number" min="0" step="1" value="1" required><label for="image">Product image *</label><input id="image" type="file" accept="image/png,image/jpeg,image/webp" required><label for="category">Category (optional)</label><input id="category"><label for="owner">Owner (optional)</label><input id="owner"><label for="notes">Notes (optional)</label><textarea id="notes"></textarea><p id="status" class="status" role="alert"></p><div class="button-row"><button type="submit">Save product</button><a href="editor.html" class="button secondary">Cancel</a></div></form></section></main></body></html>

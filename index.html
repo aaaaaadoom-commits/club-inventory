@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport"
-content="width=device-width,initial-scale=1">
+      content="width=device-width,initial-scale=1">
 <title>Club Inventory — Login</title>
 <link rel="stylesheet" href="styles.css">
-<script src="app.js" defer></script>
+<script src="app.js?v=club-gate-fix-2" defer></script>
 
 <style id="clubGateCSS">
 html:not(.clubReady) body > :not(#clubGate) {
@@ -16,11 +16,11 @@ html:not(.clubReady) body > :not(#clubGate) {
 #clubGate {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 20px;
     background: #121622;
     color: white;
     font: 16px/1.5 Arial, sans-serif;
@@ -30,10 +30,10 @@ html:not(.clubReady) body > :not(#clubGate) {
     width: 100%;
     max-width: 440px;
     padding: 26px;
-    text-align: center;
     background: #222a3d;
     border: 1px solid #485273;
-    border-radius: 15px;
+    border-radius: 14px;
+    text-align: center;
 }
 
 #gateMessage {
@@ -43,7 +43,7 @@ html:not(.clubReady) body > :not(#clubGate) {
 #gateRetry {
     padding: 11px 18px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 9px;
     cursor: pointer;
 }
 
@@ -53,48 +53,60 @@ html.clubReady #clubGate {
 }
 </style>
 
+<script id="clubGateWatchdog">
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        const title = document.getElementById('gateTitle');
+        const message = document.getElementById('gateMessage');
+
+        if (title && message &&
+            title.textContent.includes('Checking')) {
+            title.textContent = 'Connection unavailable';
+            message.textContent =
+                'Could not start the website connection. ' +
+                'Check app.js and refresh.';
+        }
+    }, 15000);
+});
+</script>
+
 </head>
 <body data-club-page="login">
-
 <div id="clubGate" role="status" aria-live="polite">
     <section>
         <h2 id="gateTitle">Checking connection…</h2>
-        <p id="gateMessage">
-            Contacting Google Sheets.
-        </p>
-        <button
-            id="gateRetry"
-            type="button"
-            hidden
-        >
+        <p id="gateMessage">Contacting Google Sheets.</p>
+        <button id="gateRetry" type="button" hidden>
             Try again
         </button>
     </section>
 </div>
 
 <header>
-<div class="brand">📦 Club Inventory</div>
-<button class="secondary"
-onclick="toggleTheme()">🌗 Theme</button>
+    <div class="brand">📦 Club Inventory</div>
+    <button class="secondary" onclick="toggleTheme()">
+        🌗 Theme
+    </button>
 </header>
 
 <main>
-<section class="panel login">
-<h1>Welcome back</h1>
-<p class="muted">Enter your email address.</p>
+    <section class="panel login">
+        <h1>Welcome back</h1>
+        <p class="muted">Enter your email address.</p>
 
-<form onsubmit="clubLogin(event)">
-<label for="email">Email address</label>
-<input id="email"
-type="email"
-autocomplete="email"
-placeholder="you@example.com"
-required>
-
-<p id="loginMessage" role="alert"></p>
-<button type="submit">Continue</button>
-</form>
-</section>
+        <form onsubmit="clubLogin(event)">
+            <label for="email">Email address</label>
+            <input
+                id="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+            >
+            <p id="loginMessage" role="alert"></p>
+            <button type="submit">Continue</button>
+        </form>
+    </section>
 </main>
 </body>
 </html>
