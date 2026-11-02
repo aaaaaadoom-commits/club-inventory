@@ -29,13 +29,12 @@ function changeQuantity(i,delta){const p=products();if(!p[i])return;p[i].quantit
 function deleteProduct(i){const p=products();if(!p[i])return;if(!confirm(`Delete "${p[i].name}"? This cannot be undone in this browser.`))return;p.splice(i,1);if(saveProducts(p))renderInventory('editor');}
 
 async 
+async 
 async function imageAsDataUrl(file) {
   if (!file) return "";
 
   const allowed = [
-    "image/jpeg",
-    "image/png",
-    "image/webp"
+    "image/jpeg", "image/png", "image/webp"
   ];
 
   if (!allowed.includes(file.type)) {
@@ -44,11 +43,11 @@ async function imageAsDataUrl(file) {
 
   if (file.size > 20 * 1024 * 1024) {
     throw new Error(
-      "Image exceeds 20 MB. Choose a smaller file."
+      "Choose an image smaller than 20 MB."
     );
   }
 
-  const objectUrl = URL.createObjectURL(file);
+  const objectURL = URL.createObjectURL(file);
 
   try {
     const img = await new Promise((resolve, reject) => {
@@ -56,18 +55,16 @@ async function imageAsDataUrl(file) {
 
       picture.onload = () => resolve(picture);
 
-      picture.onerror = () => reject(
-        new Error("Cannot open this image.")
-      );
+      picture.onerror = () =>
+        reject(new Error("Cannot read this image."));
 
-      picture.src = objectUrl;
+      picture.src = objectURL;
     });
 
-    // Automatically reduce resolution and file size.
-    for (const maxSize of [1400, 1100, 900, 700, 500]) {
+    for (const maxSide of [1400, 1100, 800, 600, 450]) {
       const scale = Math.min(
         1,
-        maxSize / Math.max(
+        maxSide / Math.max(
           img.naturalWidth,
           img.naturalHeight
         )
@@ -76,11 +73,13 @@ async function imageAsDataUrl(file) {
       const canvas = document.createElement("canvas");
 
       canvas.width = Math.max(
-        1, Math.round(img.naturalWidth * scale)
+        1,
+        Math.round(img.naturalWidth * scale)
       );
 
       canvas.height = Math.max(
-        1, Math.round(img.naturalHeight * scale)
+        1,
+        Math.round(img.naturalHeight * scale)
       );
 
       const ctx = canvas.getContext("2d");
@@ -89,33 +88,32 @@ async function imageAsDataUrl(file) {
         throw new Error("Image processing unavailable.");
       }
 
-      // White background for transparent PNG images.
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(
         img, 0, 0, canvas.width, canvas.height
       );
 
-      for (const quality of [0.85, 0.72, 0.58, 0.44]) {
-        const result = canvas.toDataURL(
+      for (const quality of [0.82, 0.67, 0.52, 0.37]) {
+        const data = canvas.toDataURL(
           "image/jpeg", quality
         );
 
         if (
-          result.startsWith("data:image/jpeg;base64,")
-          && result.length < 900000
+          data.startsWith("data:image/jpeg;base64,") &&
+          data.length < 650000
         ) {
-          return result;
+          return data;
         }
       }
     }
 
     throw new Error(
-      "Image could not be compressed enough."
+      "This image could not be compressed enough."
     );
 
   } finally {
-    URL.revokeObjectURL(objectUrl);
+    URL.revokeObjectURL(objectURL);
   }
 }
 
