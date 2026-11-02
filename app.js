@@ -30,43 +30,43 @@ function deleteProduct(i){const p=products();if(!p[i])return;if(!confirm(`Delete
 
 async 
 async 
+
 async function imageAsDataUrl(file) {
   if (!file) return "";
 
   const allowed = [
-    "image/jpeg", "image/png", "image/webp"
+    "image/jpeg",
+    "image/png",
+    "image/webp"
   ];
 
   if (!allowed.includes(file.type)) {
-    throw new Error("Choose a JPG, PNG, or WebP image.");
+    throw new Error("Choose a JPG, PNG or WebP photo.");
   }
 
-  if (file.size > 20 * 1024 * 1024) {
-    throw new Error(
-      "Choose an image smaller than 20 MB."
-    );
+  if (file.size > 30 * 1024 * 1024) {
+    throw new Error("Choose a photo smaller than 30 MB.");
   }
 
-  const objectURL = URL.createObjectURL(file);
+  const objectUrl = URL.createObjectURL(file);
 
   try {
-    const img = await new Promise((resolve, reject) => {
-      const picture = new Image();
+    const image = new Image();
 
-      picture.onload = () => resolve(picture);
-
-      picture.onerror = () =>
-        reject(new Error("Cannot read this image."));
-
-      picture.src = objectURL;
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(
+        new Error("Unable to read this photo.")
+      );
+      image.src = objectUrl;
     });
 
-    for (const maxSide of [1400, 1100, 800, 600, 450]) {
-      const scale = Math.min(
+    for (const maxSide of [1600, 1200, 900, 650, 450]) {
+      const ratio = Math.min(
         1,
         maxSide / Math.max(
-          img.naturalWidth,
-          img.naturalHeight
+          image.naturalWidth,
+          image.naturalHeight
         )
       );
 
@@ -74,12 +74,12 @@ async function imageAsDataUrl(file) {
 
       canvas.width = Math.max(
         1,
-        Math.round(img.naturalWidth * scale)
+        Math.round(image.naturalWidth * ratio)
       );
 
       canvas.height = Math.max(
         1,
-        Math.round(img.naturalHeight * scale)
+        Math.round(image.naturalHeight * ratio)
       );
 
       const ctx = canvas.getContext("2d");
@@ -88,32 +88,29 @@ async function imageAsDataUrl(file) {
         throw new Error("Image processing unavailable.");
       }
 
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(
-        img, 0, 0, canvas.width, canvas.height
+        image, 0, 0, canvas.width, canvas.height
       );
 
-      for (const quality of [0.82, 0.67, 0.52, 0.37]) {
+      for (const quality of [0.85, 0.65, 0.45]) {
         const data = canvas.toDataURL(
           "image/jpeg", quality
         );
 
-        if (
-          data.startsWith("data:image/jpeg;base64,") &&
-          data.length < 650000
-        ) {
+        if (data.length < 750000) {
           return data;
         }
       }
     }
 
     throw new Error(
-      "This image could not be compressed enough."
+      "Photo could not be compressed enough."
     );
 
   } finally {
-    URL.revokeObjectURL(objectURL);
+    URL.revokeObjectURL(objectUrl);
   }
 }
 
